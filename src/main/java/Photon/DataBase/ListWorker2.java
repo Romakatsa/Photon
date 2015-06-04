@@ -3,6 +3,7 @@ package Photon.DataBase;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ListWorker2 {
@@ -12,8 +13,10 @@ public class ListWorker2 {
     public static User add(User user) {
         em.getTransaction().begin();
         User userFromBD = em.merge(user);
+
         em.getTransaction().commit();
-        return userFromBD;
+
+       return userFromBD;
     }
 
     public static void delete(long id){
@@ -31,16 +34,30 @@ public class ListWorker2 {
     }
 
     public static List<User> getList(){
+        //em.flush();
         TypedQuery<User> namedQuery = em.createNamedQuery("User.getAll", User.class);
         return namedQuery.getResultList();
     }
     public static List<User> getList(int begin, int range) {
 
-
         if(begin + range-1 > getList().size())
             range = getList().size()-begin;
         if(range < 0) return null;
-        return getList().subList(begin, range);
+        return sortList(getList().subList(begin, range));
     }
 
+
+    public static List<User> sortList(List<User> users){
+        if(users.isEmpty()) return null;
+        ArrayList<User> sortUsers = new ArrayList<User>();
+        for(int i = 0; i < users.size(); i++) {
+            for (int j = 0; j < users.size(); j++) {
+                if (users.get(j).getPlaceInTopList() == i+1){
+                    sortUsers.add(users.get(j));
+                    break;
+                }
+            }
+        }
+        return (List)sortUsers;
+    }
 }

@@ -108,14 +108,26 @@ public class Game implements IGame{
             if (!Draw.musicIsPlaying(Music.FON1))
             Draw.musicPlay(Music.FON1);
         }
-
-        maxPg = (ListWorker2.getList(0,100).size())/10;
-
-        if ((ListWorker2.getList(0,100).size() - ((ListWorker2.getList(0,100).size())/10) > 0))
-            ++maxPg;
+try {
+        maxPg = (ListWorker2.getList(0,100).size())/10; }
+catch(NullPointerException nullex) {
+    maxPg=1;
+}
+try {
+    if ((ListWorker2.getList(0, 100).size() - ((ListWorker2.getList(0, 100).size()) / 10) > 0))
+        ++maxPg;
+}
+catch (NullPointerException nullp) {
+    maxPg=1;
+}
 
        // System.out.println(maxPg+"maxPg");
-        maxElems = ListWorker2.getList(0,100).size();
+        try {
+            maxElems = ListWorker2.getList(0, 100).size();
+        }
+        catch(NullPointerException nnsdf) {
+            maxElems = 0;
+        }
        // System.out.println(maxElems+"maxElems");
         clear();
         controlMode = 2;
@@ -848,23 +860,31 @@ if (gameStatus != -1) {
 
 
 
-    public static void addAllPlayers(GOPlayer massOfPlayers[]) throws PlayerDoNotExist{
+    public static void addAllPlayers(GOPlayer massOfPlayers[]) {
 
         for(int i = 0; i < massOfPlayers.length; i++) {
             try {
-                players.add(massOfPlayers[i]);
                 massOfPlayers[i].iAdded();
+                players.add(massOfPlayers[i]);
+
                 // попытка обычным способом добавить игрока.
             } catch(NullPointerException e) {
                 // В случае ошибки. Этот метод попытается воссоздать массив игроков.
-                repairMassOfPlayers(massOfPlayers);
+
                 try {
+                    repairMassOfPlayers(massOfPlayers);
                     // метод справился со своей задачей.
-                    players.add(massOfPlayers[i]);
                     massOfPlayers[i].iAdded();
+                    players.add(massOfPlayers[i]);
+
                 } catch (NullPointerException unrealToRepair) {
                     // если же метод все таки не смог понять какого именно игрока не хватает.
-                    throw new PlayerDoNotExist("ERROR! Player do not exist! Player #" + (i + 1) + " = NULL. ");
+                    System.err.println("Cannot Repair Array of Players" + unrealToRepair.getMessage());
+                }
+
+                catch (PlayerDoNotExist needSomePlayers) {
+                    System.err.println("Small capacity array" + needSomePlayers.getMessage());
+
                 }
             }
         }
@@ -877,24 +897,53 @@ if (gameStatus != -1) {
         }
         for(int i = 0; i < gameConfiguration.playersAmount + gameConfiguration.isBot; i++) {
             if(massOfPlayers[i] == null) {
-                massOfPlayers[i] = addPlayer(massOfPlayers, i);
+                    massOfPlayers[i] = addPlayer(massOfPlayers, i);
             }
         }
     }
+
+
     private static GOPlayer addPlayer(final GOPlayer massOfPlayers[], final int amountCorrectlyCreatedPlayers) {
+        int bots = 0;
+        int players = 0;
         // Проверка. Какого вида игрока еще не создано (бот\не бот) и СОЗДАНИЕ НЕДОСТОЮЩЕГО ИГРОКА.
         // Для этого нужно перебрать массив massOfPlayers[] до игрока номер - amountCorrectlyCreatedPlayers
-        if(false/*Условия из-за которых нельзя воссоздать игрока.*/) return null;
-        return GOPlayer.newBuilder()
-                .setXStart(GOPlayer.beginX)
-                .setYStart(65 * Main.ratio)
-                .setSize(2)
-                .setFigure(DrawFigure.CIRCLE)
-                .setName(User.defaultName + "_3")
-                .setColor(3)
-                .isBot(true)
-                .build()
-        ;
+        for(int k=0; k<amountCorrectlyCreatedPlayers; k++) {
+            if (massOfPlayers[k].isBot) {
+                bots++;
+            } else {
+                players++;
+            }
+        }
+
+        if(players < gameConfiguration.playersAmount) {
+            return GOPlayer.newBuilder()
+                    .setXStart(GOPlayer.beginX)
+                    .setYStart(65 * Main.ratio)
+                    .setSize(2)
+                    .setFigure(DrawFigure.CIRCLE)
+                    .setName(User.defaultName + "_3")
+                    .setColor(3)
+                    .isBot(false)
+                    .build()
+                    ;
+        }
+
+        if (bots<gameConfiguration.isBot) {
+            return GOPlayer.newBuilder()
+                    .setXStart(GOPlayer.beginX)
+                    .setYStart(65 * Main.ratio)
+                    .setSize(2)
+                    .setFigure(DrawFigure.CIRCLE)
+                    .setName(User.defaultName + "_3")
+                    .setColor(3)
+                    .isBot(true)
+                    .build()
+                    ;
+
+        }
+
+        return null;
     }
 
 
@@ -1099,8 +1148,13 @@ if (gameStatus != -1) {
             for (GOPlayer player : players) {
                 User user = new User(playerName.toString(), (int) player.score, new Time((integerTime / 3600), (integerTime / 60) % 60, integerTime % 60), (new java.sql.Date(new Date().getTime())));
 //                ListWorker.DBWorker.insert(user);
-                new ListWorker2().add(user);
-                System.out.println("OK");
+                 new ListWorker2().add(user);
+                System.out.println("OK,ADDED");
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
         }
 

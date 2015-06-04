@@ -317,16 +317,9 @@ public class GOPlayer extends Photon {
         return new GOPlayer().new PlayerBuilder();
     }
 
-    public void iAdded() {
-        if(name.length() >0)
-            System.out.println("Photon "+ name +" was added!");
-        else
+    public void iAdded()  {
             System.out.println("Photon was added!");
-        System.out.println("\tparameters. "
-                + "\n\tIs bot: " + isBot
-                + "\n\tLocation: " + getX() + "x" + getY()
-                + "\n\tSize: " + (sx*sy)
-        );
+
     }
 
     public class PlayerBuilder {
